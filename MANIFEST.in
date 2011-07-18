@@ -1,2 +1,2 @@
 include README.rst
-include boxes/templates/*/*
+recursive-include boxes/templates/boxes *

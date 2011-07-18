@@ -12,8 +12,13 @@ setup(
     url = "http://github.com/eldarion/boxes",
     packages = [
         "boxes",
-        "boxes.templatetags",
+        "boxes.templatetags"
     ],
+    package_data = {
+        "boxes": [
+            "templates/boxes/*.html",
+        ]
+    },
     classifiers = [
         "Development Status :: 3 - Alpha",
         "Environment :: Web Environment",
