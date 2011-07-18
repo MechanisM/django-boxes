@@ -1,0 +1,7 @@
+{% if links %}
+    <ul class="boxes_links">
+        {% for link, link_text in links %}
+            <li><a href="{{ link }}" class=\"boxes-edit-link\" rel=\"facebox\">{{ link_text }}</a></li>
+        {% endfor %}
+    </ul>
+{% endif %}

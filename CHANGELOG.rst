@@ -1,3 +1,34 @@
+1.0b1.dev1003
+=============
+
+ * added multilingual capabilities
+
+Migrations
+~~~~~~~~~~
+
+Box model (added a nullable language field)::
+
+    ALTER TABLE "boxes_box" ADD COLUMN "language" varchar(10);
+    ALTER TABLE "boxes_box" ADD CONSTRAINT "boxes_box_lang_label" UNIQUE (language, label);
+
+Templates
+~~~~~~~~~
+
+Two templates were added and are included in the app.  ``boxes/_links.html`` takes
+single context variable ``links`` that is a list of tuples of (url, link text) that
+is used for multilingual configurations. \
+
+For single language use, the ``boxes/_link.html`` template is rendered with the
+context variables ``link`` and ``link_text`` in order to render the create or
+edit link. This was previously hard coded in the template tag but is now a template
+so you can override in your project if need be.
+
+The existing ``boxes/box_create.html`` and ``boxes/box_edit.html`` templates now
+receive an additional context variable called ``lang`` which is the language code
+for the content being edited. This is useful in multilingual configurations so as to
+remind the user what language they are authoring.
+
+
 1.0b1
 =====
 

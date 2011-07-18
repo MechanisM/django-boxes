@@ -33,12 +33,13 @@ def box_edit(request, pk):
     ctx = {
         "form": form,
         "box": box,
+        "lang": box.language
     }
     ctx = RequestContext(request, ctx)
     return render_to_response("boxes/box_edit.html", ctx)
 
 
-def box_create(request, label):
+def box_create(request, label, lang=None):
     if request.method == "POST":
         #if not load_can_edit()(request, **get_auth_vars(request)):
         #    return HttpResponseForbidden()
@@ -49,13 +50,16 @@ def box_create(request, label):
             box.label = label
             box.created_by = request.user
             box.last_updated_by = request.user
+            if lang:
+                box.language = lang
             box.save()
             return render_to_response("boxes/refresh.html", {})
     else:
         form = BoxForm()
     ctx = {
         "form": form,
-        "label": label
+        "label": label,
+        "lang": lang
     }
     ctx = RequestContext(request, ctx)
     return render_to_response("boxes/box_create.html", ctx)

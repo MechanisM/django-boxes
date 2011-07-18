@@ -1,9 +1,11 @@
 from django import template
+from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
 from django.utils.safestring import mark_safe
 from django.utils.encoding import smart_str
 from django.utils.translation import ugettext_lazy as _
+from django.template.loader import render_to_string
 from django.template.defaulttags import kwarg_re
 
 from boxes.models import Box
@@ -49,6 +51,12 @@ class BoxNode(template.Node):
         except KeyError:
             raise ImproperlyConfigured('django-boxes requires the use of "django.core.context_processors.request" in TEMPLATE_CONTEXT_PROCESSORS')
         
+        try:
+            account = context["account"]
+            language = account.language
+        except KeyError:
+            language = getattr(settings, "LANGUAGE_CODE", None)
+        
         label = self.label.resolve(context)
         args = [arg.resolve(context) for arg in self.args]
         kwargs = dict([
@@ -59,7 +67,7 @@ class BoxNode(template.Node):
         show_edit_link = load_can_edit()(request, *args, **kwargs)
         
         try:
-            box = Box.objects.get(label=label)
+            box = Box.objects.get(label=label, language=language)
             content = box.content.strip()
         except Box.DoesNotExist:
             box = None
@@ -70,14 +78,28 @@ class BoxNode(template.Node):
         
         # @@@ encode args/kwargs into querystring
         if show_edit_link:
-            if box is None:
-                url = reverse("box_create", args=[label])
-                link_text = unicode(_("Create"))
+            if settings.USE_I18N and getattr(settings, "LANGUAGES", None) is not None:
+                links = []
+                for code, desc in settings.LANGUAGES:
+                    try:
+                        box = Box.objects.get(label=label, language=code)
+                        links.append(
+                            (reverse("box_edit", args=[box.pk]), "Edit (%s)" % code)
+                        )
+                    except Box.DoesNotExist:
+                        box = None
+                        links.append(
+                            (reverse("box_create_lang", args=[label, code]), "Create (%s)" % code)
+                        )
+                content += render_to_string("boxes/_links.html", {"links": links})
             else:
-                url = reverse("box_edit", args=[box.pk])
-                link_text = unicode(_("Edit"))
-            
-            content += " <a href=\"%s\" class=\"boxes-edit-link\" rel=\"facebox\">%s</a>" % (url, link_text)
+                if box is None:
+                    url = reverse("box_create", args=[label])
+                    link_text = unicode(_("Create"))
+                else:
+                    url = reverse("box_edit", args=[box.pk])
+                    link_text = unicode(_("Edit"))
+                content += render_to_string("boxes/_link.html", {"link": url, "link_text": link_text})
         
         return mark_safe(content)
 
