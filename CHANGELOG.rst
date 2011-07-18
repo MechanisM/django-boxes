@@ -8,8 +8,7 @@
 Migrations
 ~~~~~~~~~~
 
-Box model (added created_by and last_updated_by columns as FK to
-User). It also includes a new model, Revision::
+Box model (added created_by and last_updated_by columns as FK to User).::
 
     ALTER TABLE "boxes_box" ADD COLUMN "created_by_id" integer not null REFERENCES "auth_user" ("id") DEFERRABLE INITIALLY DEFERRED;
     CREATE INDEX "boxes_box_created_by_id" ON "boxes_box" ("created_by_id");
